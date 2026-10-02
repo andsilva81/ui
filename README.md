@@ -30,6 +30,21 @@
 ---
 
 
+# ☰ [Menu 02](https://andsilva81.github.io/ui/menu02/menu02.html) ![Status](https://img.shields.io/badge/status-ativo-brightgreen) ![HTML](https://img.shields.io/badge/feito%20com-HTML%20%2B%20CSS-orange)
+
+- **HTML + CSS + JavaScript puro**, tudo em um único arquivo.
+- Sem frameworks, sem instalação, sem passo de build.
+- Responsivo.
+
+<p align="center">
+  <img src="./menu02/preview.gif" alt="Preview">
+</p>
+#### [👁️Visualizar](https://andsilva81.github.io/ui/menu02/menu02.html)
+
+
+---
+
+
 
 
 
