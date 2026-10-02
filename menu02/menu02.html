@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tab bar animada</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&display=swap" rel="stylesheet">
+<style>
+/* =========================================================
+   VARIÁVEIS
+   ========================================================= */
+:root {
+  --page: #f6f5f8;
+  --dot: #d9d7de;
+  --bar: #ffffff;
+  --ink: #1c1b20;          /* cor dos ícones e da pílula ativa */
+  --hover: #f1f0f4;
+  --pink-1: #ff5fb4;
+  --pink-2: #c63cf0;
+  --spring: cubic-bezier(0.34, 1.35, 0.64, 1);
+  --dur: 0.55s;
+  --item: 48px;            /* tamanho de cada ícone (o JS lê daqui) */
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  min-height: 100vh;
+  display: grid;
+  place-items: start center;
+  padding: 24px 12px;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  background-color: var(--page);
+  background-image: radial-gradient(var(--dot) 1.2px, transparent 1.2px);
+  background-size: 22px 22px;
+}
+
+/* =========================================================
+   BARRA
+   ========================================================= */
+.tabbar {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  translate: -50% 0;
+  z-index: 100;  
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: min(640px, 100%);
+  height: 76px;
+  padding: 0 14px;
+  background: var(--bar);
+  border-radius: 28px;
+  box-shadow:
+    0 1px 2px rgba(20, 16, 40, 0.04),
+    0 12px 40px rgba(20, 16, 40, 0.07);
+}
+
+/* a pílula escura que desliza */
+.indicator {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 52px;
+  width: var(--item);
+  margin-top: -26px;
+  border-radius: 16px;
+  background: var(--ink);
+  box-shadow: 0 6px 16px rgba(28, 27, 32, 0.25);
+  transition:
+    transform var(--dur) var(--spring),
+    width var(--dur) var(--spring),
+    box-shadow 0.4s,
+    background 0.4s;
+  z-index: 0;
+}
+
+/* brilho rosa quando "Likes" está ativo */
+.indicator.glow {
+  background: #24121f;
+  box-shadow:
+    0 0 0 1px rgba(255, 95, 180, 0.15),
+    0 0 22px rgba(255, 95, 180, 0.45),
+    0 6px 16px rgba(28, 27, 32, 0.25);
+}
+
+/* =========================================================
+   ITENS
+   ========================================================= */
+.tab {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--item);
+  height: 52px;
+  border: none;
+  border-radius: 16px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: width var(--dur) var(--spring), background 0.25s;
+}
+
+/* quadradinho cinza no hover (só nos inativos) */
+.tab:not(.active):hover { background: var(--hover); }
+
+.tab svg {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  transition: color 0.25s;
+}
+
+.tab .label {
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 500;
+  color: #fff;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition:
+    max-width var(--dur) var(--spring),
+    margin var(--dur) var(--spring),
+    opacity 0.15s,
+    transform 0.3s;
+}
+
+.tab.active { color: #fff; }
+.tab.active .label {
+  max-width: 120px;
+  margin-left: 9px;
+  opacity: 1;
+  transform: none;
+  /* o texto só aparece depois que a pílula chegou */
+  transition:
+    max-width var(--dur) var(--spring),
+    margin var(--dur) var(--spring),
+    opacity 0.3s 0.22s,
+    transform 0.4s 0.22s var(--spring);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--pink-2);
+  outline-offset: 3px;
+}
+
+/* coração rosa com degradê no Likes ativo */
+.heart-fill { fill: transparent; transition: fill 0.3s; }
+.tab.active .heart-fill { fill: url(#pink); }
+.tab[data-key="likes"].active svg {
+  color: var(--pink-1);
+  filter: drop-shadow(0 0 6px rgba(255, 95, 180, 0.8));
+}
+
+/* =========================================================
+   MICROANIMAÇÕES AO ATIVAR
+   ========================================================= */
+.tab.pop svg { animation: var(--anim) 0.6s var(--spring); }
+
+[data-key="home"]    { --anim: hop; }
+[data-key="explore"] { --anim: spin; }
+[data-key="likes"]   { --anim: beat; }
+[data-key="alerts"]  { --anim: ring; }
+[data-key="cart"]    { --anim: hop; }
+[data-key="profile"] { --anim: beat; }
+
+@keyframes hop  { 40% { transform: translateY(-4px); } }
+@keyframes spin { 50% { transform: rotate(-20deg) scale(1.1); } }
+@keyframes beat { 30% { transform: scale(1.3); } 60% { transform: scale(0.9); } }
+@keyframes ring {
+  15% { transform: rotate(18deg); }
+  35% { transform: rotate(-14deg); }
+  55% { transform: rotate(8deg); }
+  75% { transform: rotate(-4deg); }
+}
+[data-key="alerts"] svg { transform-origin: 50% 10%; }
+
+/* =========================================================
+   RESPONSIVO
+   ========================================================= */
+@media (max-width: 420px) {
+  :root { --item: 42px; }
+  .tabbar { height: 66px; padding: 0 9px; border-radius: 24px; }
+  .indicator, .tab { height: 46px; border-radius: 14px; }
+  .indicator { margin-top: -23px; }
+  .tab svg { width: 20px; height: 20px; }
+  .tab .label { font-size: 14px; }
+  .tab.active .label { margin-left: 7px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation: none !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- degradê usado no coração -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="pink" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff5fb4"/>
+      <stop offset="1" stop-color="#c63cf0"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<nav class="tabbar" id="tabbar" role="tablist" aria-label="Navegação">
+  <span class="indicator" id="indicator" aria-hidden="true"></span>
+
+  <button class="tab" data-key="home" role="tab" aria-label="Home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V19a1.5 1.5 0 0 1-1.5 1.5H15v-5a3 3 0 0 0-6 0v5H5.5A1.5 1.5 0 0 1 4 19z"/></svg>
+    <span class="label">Home</span>
+  </button>
+
+  <button class="tab active" data-key="explore" role="tab" aria-label="Explore">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+    <span class="label">Explorar</span>
+  </button>
+
+  <button class="tab" data-key="likes" role="tab" aria-label="Likes">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path class="heart-fill" d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z"/></svg>
+    <span class="label">Likes</span>
+  </button>
+
+  <button class="tab" data-key="alerts" role="tab" aria-label="Alerts">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>
+    <span class="label">Alertas</span>
+  </button>
+
+  <button class="tab" data-key="cart" role="tab" aria-label="Cart">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 9.5h15l-1.3 9a2 2 0 0 1-2 1.7H7.8a2 2 0 0 1-2-1.7z"/><path d="M8.5 9.5 12 4l3.5 5.5"/><path d="M10 14.5h.01M14 14.5h.01"/></svg>
+    <span class="label">Carrinho</span>
+  </button>
+
+  <button class="tab" data-key="profile" role="tab" aria-label="Profile">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="7.5" r="3.5"/><rect x="5.5" y="14" width="13" height="6.5" rx="3.25"/></svg>
+    <span class="label">Perfil</span>
+  </button>
+</nav>
+
+<script>
+const bar = document.getElementById('tabbar');
+const indicator = document.getElementById('indicator');
+const tabs = [...bar.querySelectorAll('.tab')];
+
+/* Largura natural de cada rótulo (medida uma vez) */
+function labelWidths() {
+  return tabs.map(t => t.querySelector('.label').scrollWidth);
+}
+
+/*
+  Calcula onde cada botão VAI ficar quando a animação terminar.
+  Como os botões usam "space-between", a posição de cada um é
+  uma conta simples com as larguras finais. Assim a pílula pode
+  ir direto para o destino, com a mesma curva de mola dos botões.
+*/
+function layout(activeIndex, animate = true) {
+  const css = getComputedStyle(document.documentElement);
+  const item = parseFloat(css.getPropertyValue('--item'));
+  const labelGap = window.innerWidth <= 420 ? 7 : 9;
+  const sidePad = 18;
+  const widths = labelWidths();
+
+  const finalW = tabs.map((_, i) =>
+    i === activeIndex ? item + labelGap + widths[i] + sidePad * 2 - 16 : item
+  );
+
+  const barStyle = getComputedStyle(bar);
+  const pad = parseFloat(barStyle.paddingLeft);
+  const inner = bar.clientWidth - pad * 2;
+  const total = finalW.reduce((a, b) => a + b, 0);
+  const gap = (inner - total) / (tabs.length - 1);
+
+  let x = pad;
+  for (let i = 0; i < activeIndex; i++) x += finalW[i] + gap;
+
+  if (!animate) indicator.style.transition = 'none';
+  tabs.forEach((t, i) => (t.style.width = finalW[i] + 'px'));
+  indicator.style.width = finalW[activeIndex] + 'px';
+  indicator.style.transform = `translateX(${x}px)`;
+  indicator.classList.toggle('glow', tabs[activeIndex].dataset.key === 'likes');
+  if (!animate) {
+    indicator.offsetWidth;            // força o navegador a aplicar
+    indicator.style.transition = '';
+  }
+}
+
+function activate(i, focus = false) {
+  const current = tabs.findIndex(t => t.classList.contains('active'));
+  if (i === current) return;
+
+  tabs.forEach((t, j) => {
+    t.classList.toggle('active', j === i);
+    t.setAttribute('aria-selected', j === i);
+    t.tabIndex = j === i ? 0 : -1;
+  });
+
+  // microanimação do ícone
+  const t = tabs[i];
+  t.classList.remove('pop');
+  void t.offsetWidth;
+  t.classList.add('pop');
+
+  layout(i);
+  if (focus) t.focus();
+}
+
+tabs.forEach((t, i) => {
+  t.addEventListener('click', () => activate(i));
+  t.addEventListener('animationend', () => t.classList.remove('pop'));
+});
+
+// setas do teclado
+bar.addEventListener('keydown', (e) => {
+  const i = tabs.findIndex(t => t.classList.contains('active'));
+  if (e.key === 'ArrowRight') activate((i + 1) % tabs.length, true);
+  if (e.key === 'ArrowLeft')  activate((i - 1 + tabs.length) % tabs.length, true);
+});
+
+// estado inicial (sem animação) e ajuste ao redimensionar
+function init() {
+  const i = tabs.findIndex(t => t.classList.contains('active'));
+  tabs.forEach((t, j) => {
+    t.setAttribute('aria-selected', j === i);
+    t.tabIndex = j === i ? 0 : -1;
+  });
+  tabs.forEach(t => (t.style.transition = 'none'));
+  layout(i, false);
+  requestAnimationFrame(() => tabs.forEach(t => (t.style.transition = '')));
+}
+
+document.fonts.ready.then(init);
+window.addEventListener('resize', () => {
+  const i = tabs.findIndex(t => t.classList.contains('active'));
+  tabs.forEach(t => (t.style.transition = 'none'));
+  layout(i, false);
+  requestAnimationFrame(() => tabs.forEach(t => (t.style.transition = '')));
+});
+</script>
+</body>
+</html>
