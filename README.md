@@ -3,8 +3,9 @@
 - **HTML + CSS + JavaScript puro**, tudo em um único arquivo.
 - Sem frameworks, sem instalação, sem passo de build.
 - Responsivo.
+- Interface moderna e prática.
 
-Interface moderna e prática.
+
 ![Preview](./sidebar01/preview.gif)
 #### [👁️Visualizar](https://andsilva81.github.io/ui/sidebar01/sidebar01.html)
 
