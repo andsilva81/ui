@@ -6,7 +6,7 @@
 - Interface moderna e prática.
 
 <p align="center">
-  ![Preview](./sidebar01/preview.gif)
+  <img src="./sidebar01/preview.gif" width="500" alt="Preview">
 </p>
 #### [👁️Visualizar](https://andsilva81.github.io/ui/sidebar01/sidebar01.html)
 
