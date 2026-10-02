@@ -5,8 +5,7 @@
 - Responsivo.
 - Interface moderna e prática.
 
-
-![Preview](./sidebar01/preview.gif)
+<p align="center">![Preview](./sidebar01/preview.gif)</p>p
 #### [👁️Visualizar](https://andsilva81.github.io/ui/sidebar01/sidebar01.html)
 
 
