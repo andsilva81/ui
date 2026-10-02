@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Navbar animada</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* =========================================================
+   VARIÁVEIS
+   ========================================================= */
+:root {
+  --nav-bg: rgba(22, 24, 30, 0.72);
+  --nav-border: rgba(255, 255, 255, 0.09);
+  --text-dim: #9097a3;
+  --text-bright: #ffffff;
+  --pill-border: rgba(255, 255, 255, 0.14);
+  --spring: cubic-bezier(0.34, 1.45, 0.64, 1);   /* efeito "mola" */
+  --smooth: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; }
+
+body {
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: #0d0e10;
+  color: var(--text-bright);
+  overflow: hidden;
+}
+
+/* =========================================================
+   FUNDO (dobras de tecido escuras, só com CSS)
+   ========================================================= */
+.bg {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 60% 80% at 15% 30%, #6b6d72 0%, transparent 60%),
+    radial-gradient(ellipse 40% 60% at 85% 70%, #4a4c51 0%, transparent 60%),
+    linear-gradient(135deg, #2a2b2e 0%, #121315 55%, #1d1e21 100%);
+}
+.bg span {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  filter: blur(1px);
+  box-shadow: inset -40px 0 80px rgba(0, 0, 0, 0.55), 0 0 60px rgba(0, 0, 0, 0.5);
+}
+.bg span:nth-child(1) { width: 120vmax; height: 90vmax; left: -55vmax; top: -10vmax; background: linear-gradient(120deg, #7a7c80, #2a2b2e 60%); }
+.bg span:nth-child(2) { width: 90vmax;  height: 110vmax; left: 55vw; top: -30vmax; background: linear-gradient(200deg, #55575c, #151618 55%); transform: rotate(-25deg); }
+.bg span:nth-child(3) { width: 80vmax;  height: 100vmax; left: 68vw; top: -20vmax; background: linear-gradient(210deg, #8a8c90, #1a1b1d 50%); transform: rotate(-30deg); }
+.bg span:nth-child(4) { width: 70vmax;  height: 95vmax;  left: 80vw; top: -15vmax; background: linear-gradient(215deg, #6f7176, #18191b 50%); transform: rotate(-32deg); }
+
+/* =========================================================
+   NAVBAR
+   ========================================================= */
+.nav {
+  position: fixed;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  height: 56px;
+  padding: 0 10px 0 18px;
+
+  background: var(--nav-bg);
+  border: 1px solid var(--nav-border);
+  border-radius: 16px;
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 10px 40px rgba(0, 0, 0, 0.45);
+
+  transition: padding 0.5s var(--spring), gap 0.5s var(--spring), box-shadow 0.4s;
+}
+
+/* brilho suave que acompanha o mouse */
+.nav::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(220px circle at var(--mx, 50%) var(--my, 50%),
+              rgba(255, 255, 255, 0.07), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.nav:hover::before { opacity: 1; }
+
+/* a navbar "respira" quando o mouse entra */
+.nav:hover {
+  padding: 0 12px 0 22px;
+  gap: 22px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 14px 50px rgba(0, 0, 0, 0.55);
+}
+
+/* ---------- Logo ---------- */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-bright);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+  margin-right: 34px;
+  transition: margin 0.5s var(--spring);
+}
+.logo-bars { display: flex; align-items: flex-end; gap: 3px; height: 18px; }
+.logo-bars i { width: 3.5px; border-radius: 2px; background: #fff; }
+.logo-bars i:nth-child(1) { height: 10px; opacity: 0.55; }
+.logo-bars i:nth-child(2) { height: 18px; }
+.logo-bars i:nth-child(3) { height: 14px; opacity: 0.8; }
+
+/* ---------- Links ---------- */
+.links {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  list-style: none;
+  transition: gap 0.5s var(--spring);
+}
+
+.link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 2px;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+/* o texto cresce e sobe um pouquinho */
+.link .label {
+  display: inline-block;
+  transform-origin: center bottom;
+  transition: transform 0.45s var(--spring);
+}
+
+.link .ico { display: none; }
+
+/* setinha */
+.link .chev {
+  width: 9px;
+  height: 9px;
+  opacity: 0.6;
+  transition: transform 0.45s var(--spring), opacity 0.3s;
+}
+
+/* sublinhado com brilho */
+.link .label::after {
+  content: "";
+  position: absolute;
+  left: -2px;
+  right: -2px;
+  bottom: -3px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, #fff 25%, #fff 75%, transparent);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+  transform: scaleX(0);
+  transition: transform 0.45s var(--smooth);
+}
+.link .label { position: relative; }
+
+.link:hover,
+.link:focus-visible { color: var(--text-bright); }
+.link:hover .label,
+.link:focus-visible .label { transform: scale(1.14) translateY(-1px); }
+.link:hover .label::after,
+.link:focus-visible .label::after { transform: scaleX(1); }
+.link:hover .chev,
+.link:focus-visible .chev { transform: rotate(180deg) translateX(-2px); opacity: 1; }
+
+.link:focus-visible { outline: none; }
+
+/* ---------- Ações (busca + login) ---------- */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 26px;
+  transition: margin 0.5s var(--spring);
+}
+
+/* A busca é UM elemento que vira de círculo em pílula */
+.search {
+  flex: none;
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid var(--pill-border);
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    width 0.6s var(--spring),
+    border-radius 0.5s var(--smooth),
+    background 0.3s,
+    border-color 0.3s,
+    box-shadow 0.3s;
+}
+.search:hover { background: rgba(255, 255, 255, 0.09); }
+
+.search-icon {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  color: var(--text-dim);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+.search-icon svg { width: 16px; height: 16px; }
+.search:hover .search-icon { color: #fff; }
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  outline: none;
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  caret-color: #fff;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity 0.25s, transform 0.4s var(--smooth);
+  pointer-events: none;
+}
+.search input::placeholder { color: rgba(255, 255, 255, 0.35); }
+
+.search kbd {
+  flex: none;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 2px 5px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.4);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.search-close {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin: 0 6px 0 8px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.25s, transform 0.4s var(--spring), background 0.2s, color 0.2s;
+}
+.search-close:hover { background: rgba(255, 255, 255, 0.15); color: #fff; }
+.search-close svg { width: 12px; height: 12px; }
+
+/* --- Estado aberto --- */
+.nav.search-open .search {
+  width: 270px;
+  border-radius: 12px;
+  cursor: text;
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.04);
+}
+.nav.search-open .search input {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+  transition-delay: 0.12s;
+}
+.nav.search-open .search kbd { opacity: 1; transition-delay: 0.18s; }
+.nav.search-open .search-close { opacity: 1; transform: scale(1); transition-delay: 0.2s; }
+.nav.search-open .search-icon { color: #fff; }
+
+/* a navbar abre espaço: os links se aproximam */
+.nav.search-open .links { gap: 22px; }
+.nav.search-open .logo { margin-right: 14px; }
+.nav.search-open .actions { margin-left: 14px; }
+
+/* ---------- Botão Log in ---------- */
+.login {
+  flex: none;
+  white-space: nowrap;
+  height: 38px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: 1px solid var(--pill-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.25s, border-color 0.25s, transform 0.35s var(--spring);
+}
+.login:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: scale(1.04);
+}
+.login:active { transform: scale(0.95); }
+
+.search-icon:focus-visible,
+.search-close:focus-visible,
+.login:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   RESPONSIVO
+   ========================================================= */
+/* telas médias: tudo um pouco mais compacto */
+@media (max-width: 900px) {
+  .nav, .nav:hover { gap: 12px; padding: 0 8px 0 14px; }
+  .logo { margin-right: 10px; }
+  .links { gap: 18px; }
+  .actions { margin-left: 10px; }
+  .link { font-size: 13px; }
+  .nav.search-open .links { gap: 12px; }
+  .nav.search-open .logo > span:last-child { display: none; }
+  .nav.search-open .search { width: 200px; }
+}
+
+/* telas pequenas: os links viram ícones */
+@media (max-width: 640px) {
+  .nav, .nav:hover {
+    width: calc(100% - 24px);
+    justify-content: space-between;
+    gap: 6px;
+    padding: 0 8px 0 12px;
+  }
+  .logo { margin-right: 0; }
+  .logo > span:last-child { display: none; }  /* só o ícone do logo */
+  .actions { margin-left: 0; gap: 6px; }
+  .login { padding: 0 12px; font-size: 13px; }
+
+  .links, .nav.search-open .links { gap: 2px; }
+
+  .link {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 10px;
+    transition: color 0.3s, background 0.3s;
+  }
+  .link .label, .link .chev { display: none; }
+
+  .link .ico {
+    display: block;
+    width: 19px;
+    height: 19px;
+    transition: transform 0.45s var(--spring);
+  }
+
+  /* mesmo efeito do desktop: cresce, sobe e ganha o traço brilhante */
+  .link::after {
+    content: "";
+    position: absolute;
+    left: 9px;
+    right: 9px;
+    bottom: 3px;
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, transparent, #fff 25%, #fff 75%, transparent);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+    transform: scaleX(0);
+    transition: transform 0.45s var(--smooth);
+  }
+  .link:hover .ico,
+  .link:focus-visible .ico { transform: scale(1.18) translateY(-2px); }
+  .link:hover::after,
+  .link:focus-visible::after { transform: scaleX(1); }
+
+  /* dica com o nome embaixo do ícone */
+  .link::before {
+    content: attr(data-tip);
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 50%;
+    padding: 5px 9px;
+    border-radius: 7px;
+    background: rgba(22, 24, 30, 0.95);
+    border: 1px solid var(--nav-border);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -4px);
+    transition: opacity 0.2s, transform 0.35s var(--spring);
+  }
+  .link:hover::before,
+  .link:focus-visible::before { opacity: 1; transform: translate(-50%, 0); }
+
+  /* busca aberta: os ícones saem e a busca ocupa o espaço */
+  .links { transition: opacity 0.25s, max-width 0.5s var(--smooth); max-width: 220px; overflow: visible; }
+  .nav.search-open .links { opacity: 0; max-width: 0; overflow: hidden; pointer-events: none; }
+  .nav.search-open .actions { flex: 1; margin-left: 8px; }
+  .nav.search-open .search { flex: 1; width: auto; min-width: 0; }
+  .nav.search-open .actions { min-width: 0; }
+  .nav.search-open .login { display: none; }
+}
+
+@media (max-width: 380px) {
+  .nav, .nav:hover { gap: 2px; padding: 0 6px 0 10px; }
+  .link { width: 31px; }
+  .link .ico { width: 18px; height: 18px; }
+  .search { width: 34px; height: 34px; }
+  .search-icon { width: 32px; height: 32px; }
+  .login { height: 34px; padding: 0 10px; font-size: 12.5px; }
+  .actions { gap: 4px; }
+  .nav.search-open kbd { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+
+<nav class="nav" id="nav">
+  <a href="#" class="logo">
+    <span class="logo-bars"><i></i><i></i><i></i></span>
+    <span>Menu</span>
+  </a>
+
+  <ul class="links">
+    <li><button class="link" aria-label="Home" data-tip="Home"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg><span class="label">Home</span><svg class="chev" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 3.5 5 6.5 8 3.5"/></svg></button></li>
+    <li><button class="link" aria-label="Serviços" data-tip="Serviços"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/></svg><span class="label">Serviços</span><svg class="chev" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 3.5 5 6.5 8 3.5"/></svg></button></li>
+    <li><button class="link" aria-label="Sobre" data-tip="Sobre"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.5h.01"/></svg><span class="label">Sobre</span><svg class="chev" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 3.5 5 6.5 8 3.5"/></svg></button></li>
+    <li><button class="link" aria-label="Ferramentas" data-tip="Ferramentas"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg><span class="label">Ferramentas</span><svg class="chev" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 3.5 5 6.5 8 3.5"/></svg></button></li>
+    <li><button class="link" aria-label="Contato" data-tip="Contato"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><span class="label">Contato</span><svg class="chev" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 3.5 5 6.5 8 3.5"/></svg></button></li>
+  </ul>
+
+  <div class="actions">
+    <div class="search" id="search">
+      <button class="search-icon" id="searchBtn" aria-label="Abrir busca" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      </button>
+      <input id="searchInput" type="text" placeholder="Procurar..." tabindex="-1" aria-label="Buscar">
+      <kbd>ESC</kbd>
+      <button class="search-close" id="searchClose" aria-label="Fechar busca" tabindex="-1">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <button class="login">Log in</button>
+  </div>
+</nav>
+
+<script>
+const nav = document.getElementById('nav');
+const search = document.getElementById('search');
+const searchBtn = document.getElementById('searchBtn');
+const input = document.getElementById('searchInput');
+const closeBtn = document.getElementById('searchClose');
+
+function openSearch() {
+  if (nav.classList.contains('search-open')) { input.focus(); return; }
+  nav.classList.add('search-open');
+  searchBtn.setAttribute('aria-expanded', 'true');
+  input.tabIndex = 0;
+  closeBtn.tabIndex = 0;
+  // espera a pílula começar a abrir antes de focar
+  setTimeout(() => input.focus(), 150);
+}
+
+function closeSearch() {
+  nav.classList.remove('search-open');
+  searchBtn.setAttribute('aria-expanded', 'false');
+  input.value = '';
+  input.tabIndex = -1;
+  closeBtn.tabIndex = -1;
+  input.blur();
+}
+
+// clicar no círculo (ou em qualquer parte da pílula) abre
+search.addEventListener('click', (e) => {
+  if (e.target.closest('#searchClose')) return;
+  openSearch();
+});
+
+closeBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  closeSearch();
+  searchBtn.focus();
+});
+
+// atalhos: ESC fecha, "/" ou Ctrl/Cmd+K abre
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && nav.classList.contains('search-open')) {
+    closeSearch();
+    searchBtn.focus();
+  }
+  const typing = document.activeElement === input;
+  if (!typing && (e.key === '/' || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k'))) {
+    e.preventDefault();
+    openSearch();
+  }
+});
+
+// clicar fora fecha (só se estiver vazio)
+document.addEventListener('click', (e) => {
+  if (!nav.contains(e.target) && nav.classList.contains('search-open') && !input.value) {
+    closeSearch();
+  }
+});
+
+// brilho que segue o mouse dentro da navbar
+nav.addEventListener('mousemove', (e) => {
+  const r = nav.getBoundingClientRect();
+  nav.style.setProperty('--mx', `${e.clientX - r.left}px`);
+  nav.style.setProperty('--my', `${e.clientY - r.top}px`);
+});
+</script>
+</body>
+</html>
