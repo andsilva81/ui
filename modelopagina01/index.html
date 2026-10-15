@@ -1,0 +1,542 @@
+<title>Modelo de painel</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: fixed sidebar + topbar shell, staggered blur-in content, slide-over AI assistant */
+:root{
+  --bg:#f4f4f5; --surface:#ffffff; --surface-2:#f7f7f8; --line:#e8e8ea; --line-2:#f0f0f2;
+  --fg:#18181b; --muted:#71717a; --faint:#a1a1aa;
+  --ink:#141416; --ink-fg:#ffffff;
+  --good:#16a34a; --good-bg:#dcfce7; --warn:#ca8a04; --bad:#dc2626; --info:#2563eb; --info-bg:#dbeafe;
+  --shadow:0 1px 2px rgba(20,20,25,.04),0 8px 24px rgba(20,20,25,.06);
+  --shadow-lg:0 24px 60px rgba(20,20,25,.16),0 2px 6px rgba(20,20,25,.06);
+  --scrim:rgba(244,244,245,.55);
+  --font:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e0e10; --surface:#17171a; --surface-2:#1d1d21; --line:#2a2a2f; --line-2:#222226;
+  --fg:#f4f4f5; --muted:#a1a1aa; --faint:#6b6b74; --ink:#f4f4f5; --ink-fg:#111113;
+  --good:#4ade80; --good-bg:rgba(74,222,128,.14); --warn:#facc15; --bad:#f87171; --info:#60a5fa; --info-bg:rgba(96,165,250,.16);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+  --shadow-lg:0 24px 60px rgba(0,0,0,.55); --scrim:rgba(14,14,16,.55); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e0e10; --surface:#17171a; --surface-2:#1d1d21; --line:#2a2a2f; --line-2:#222226;
+  --fg:#f4f4f5; --muted:#a1a1aa; --faint:#6b6b74; --ink:#f4f4f5; --ink-fg:#111113;
+  --good:#4ade80; --good-bg:rgba(74,222,128,.14); --warn:#facc15; --bad:#f87171; --info:#60a5fa; --info-bg:rgba(96,165,250,.16);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+  --shadow-lg:0 24px 60px rgba(0,0,0,.55); --scrim:rgba(14,14,16,.55); color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:13px;-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--info);outline-offset:2px;border-radius:8px}
+svg{display:block;flex:none}
+.num{font-variant-numeric:tabular-nums}
+
+.app{display:flex;height:100%;padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+
+/* ---------- Sidebar ---------- */
+.sidebar{width:232px;flex:none;display:flex;flex-direction:column;background:var(--surface);border-right:1px solid var(--line);padding:14px 12px;gap:4px;transition:width .35s var(--ease),transform .35s var(--ease);overflow:hidden}
+.brand{display:flex;align-items:center;justify-content:space-between;padding:2px 4px 12px}
+.brand-l{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;white-space:nowrap}
+.logo{width:22px;height:22px;border-radius:6px;background:var(--ink);color:var(--ink-fg);display:grid;place-items:center}
+.icon-btn{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;color:var(--muted)}
+.icon-btn:hover{background:var(--surface-2);color:var(--fg)}
+.group-label{display:flex;align-items:center;gap:6px;color:var(--faint);font-size:11.5px;padding:10px 8px 4px;white-space:nowrap}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 8px;border-radius:9px;color:var(--muted);text-align:left;white-space:nowrap;transition:background .2s,color .2s;position:relative}
+.nav-item:hover{background:var(--surface-2);color:var(--fg)}
+.nav-item.active{background:var(--surface-2);color:var(--fg);font-weight:500}
+.nav-item .grow{flex:1}
+.badge{font-size:10.5px;font-weight:600;padding:1px 6px;border-radius:6px}
+.badge.blue{background:var(--info-bg);color:var(--info)}
+.badge.green{background:var(--good-bg);color:var(--good)}
+.flame{color:#f97316}
+.spacer{flex:1}
+.runs{display:flex;flex-direction:column;gap:2px}
+.run{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;color:var(--fg);font-size:12.5px;white-space:nowrap;text-decoration:none}
+.run:hover{background:var(--surface-2)}
+.run span.t{flex:1;overflow:hidden;text-overflow:ellipsis}
+.dot{width:14px;height:14px;border-radius:4px;flex:none}
+.star{color:var(--faint)}
+.quota{border-top:1px solid var(--line);margin-top:8px;padding:12px 6px 6px;display:flex;flex-direction:column;gap:6px}
+.quota b{font-weight:600;font-size:12.5px}
+.quota small{color:var(--muted);font-size:11.5px}
+.meter{height:4px;border-radius:4px;background:var(--line-2);overflow:hidden}
+.meter i{display:block;height:100%;width:89%;background:var(--ink);border-radius:4px}
+.upgrade{margin-top:4px;padding:7px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);font-weight:500;font-size:12px}
+.upgrade:hover{background:var(--line-2)}
+.user{display:flex;align-items:center;gap:10px;padding:10px 6px 2px;border-top:1px solid var(--line);margin-top:6px;white-space:nowrap}
+.avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#d4d4d8,#71717a);flex:none;display:grid;place-items:center;color:#fff;font-weight:600;font-size:11px}
+.user .who{flex:1;min-width:0;line-height:1.25}
+.user .who small{display:block;color:var(--muted);font-size:11px;overflow:hidden;text-overflow:ellipsis}
+
+/* Menu reduzido: só ícones */
+body.collapsed .sidebar{width:64px}
+body.collapsed .sidebar .hide-c{display:none}
+body.collapsed .brand{flex-direction:column;gap:10px;padding-inline:0}
+body.collapsed .nav-item,body.collapsed .run,body.collapsed .user{justify-content:center}
+body.collapsed .group-label{justify-content:center;padding:8px 0 4px}
+body.collapsed .group-label::after{content:"";display:block;width:20px;height:1px;background:var(--line)}
+body.collapsed .nav-item[data-badge]::after{content:"";position:absolute;top:6px;right:8px;width:6px;height:6px;border-radius:50%;background:var(--info)}
+#collapse svg{transition:transform .35s var(--ease)}
+body.collapsed #collapse svg{transform:scaleX(-1)}
+.tip{position:fixed;z-index:60;pointer-events:none;background:var(--ink);color:var(--ink-fg);font-size:12px;font-weight:500;padding:5px 9px;border-radius:7px;white-space:nowrap;opacity:0;transform:translateX(-4px);transition:opacity .15s,transform .15s}
+.tip.show{opacity:1;transform:none}
+
+/* ---------- Main ---------- */
+.main{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
+.topbar{height:56px;flex:none;display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid var(--line);background:var(--surface)}
+.crumb{display:flex;align-items:center;gap:8px;color:var(--muted);flex:1;min-width:0}
+.search{display:flex;align-items:center;gap:8px;width:240px;height:34px;padding:0 10px;border:1px solid var(--line);border-radius:9px;color:var(--faint);background:var(--surface)}
+.search input{border:0;outline:0;background:transparent;color:var(--fg);font:inherit;width:100%;min-width:0}
+.ask{display:flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:9px;font-weight:500;color:var(--fg);transition:background .25s,color .25s}
+.ask:hover{background:var(--surface-2)}
+.ask.on{background:var(--ink);color:var(--ink-fg)}
+.menu-btn{display:none}
+
+.scroll{flex:1;overflow:auto;padding-block:28px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.content{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.head h1{margin:0 0 4px;font-size:22px;font-weight:600;letter-spacing:-.02em;text-wrap:balance}
+.head p{margin:0;color:var(--muted)}
+.head-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px;border-radius:9px;font-weight:500;white-space:nowrap}
+.btn.ghost{border:1px solid var(--line);background:var(--surface);color:var(--fg)}
+.btn.dark{background:var(--ink);color:var(--ink-fg)}
+.btn.dark:hover{opacity:.88}
+
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.stat{background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:4px}
+.stat-in{background:var(--surface);border-radius:11px;padding:12px 14px 14px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px}
+.stat-top{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.chip-ic{width:22px;height:22px;border-radius:6px;border:1px solid var(--line);display:grid;place-items:center;color:var(--fg)}
+.stat-val{font-size:24px;font-weight:600;letter-spacing:-.02em}
+.stat-foot{display:flex;align-items:center;justify-content:space-between;padding:8px 10px 6px;font-size:11.5px}
+.up{color:var(--good)} .down{color:var(--bad)}
+.stat-foot .i{color:var(--faint)}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow);min-width:0}
+.panel-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.panel-h h2{margin:0;font-size:15px;font-weight:600;letter-spacing:-.01em}
+.link{color:var(--muted);text-decoration:underline;text-underline-offset:3px;font-size:12.5px}
+.link:hover{color:var(--fg)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:separate;border-spacing:0;min-width:720px}
+th{font-weight:500;color:var(--muted);text-align:left;font-size:12px;padding:9px 12px;background:var(--surface-2)}
+th:first-child{border-radius:9px 0 0 9px} th:last-child{border-radius:0 9px 9px 0}
+td{padding:11px 12px;border-bottom:1px solid var(--line-2);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+tbody tr{transition:background .15s}
+tbody tr:hover td{background:var(--surface-2)}
+.wf{display:flex;align-items:center;gap:9px;font-weight:500}
+.muted{color:var(--muted)}
+.last{display:flex;align-items:center;gap:6px;color:var(--muted)}
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;background:var(--good-bg);color:var(--good)}
+.pill.paused{background:var(--line-2);color:var(--muted)}
+.acts{display:flex;gap:14px;align-items:center;color:var(--muted)}
+.acts button:hover{color:var(--fg)}
+
+.tpl-nav{display:flex;gap:6px}
+.tpl-nav button{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:var(--muted)}
+.tpls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.tpl{border:1px solid var(--line);border-radius:12px;padding:6px;display:flex;flex-direction:column;gap:10px;transition:transform .3s var(--ease),box-shadow .3s}
+.tpl:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.tpl-art{position:relative;height:104px;border-radius:9px;background:
+  linear-gradient(var(--line-2) 1px,transparent 1px) 0 0/100% 50%,
+  linear-gradient(90deg,var(--line-2) 1px,transparent 1px) 0 0/33.33% 100%,var(--surface-2);display:grid;place-items:center;overflow:hidden}
+.tpl-art .obj{width:54px;height:54px;border-radius:14px;background:linear-gradient(160deg,var(--surface),var(--line));box-shadow:0 10px 18px rgba(0,0,0,.14),inset 0 1px 0 rgba(255,255,255,.6);display:grid;place-items:center;color:var(--muted);transition:transform .5s var(--ease)}
+.tpl:hover .obj{transform:translateY(-3px) rotate(-4deg)}
+.tpl-art .tag{position:absolute;top:8px;right:9px;font-size:10.5px;font-weight:500;color:var(--info)}
+.tpl-art .tag.p{color:var(--muted)}
+.tpl-b{padding:0 6px 4px;display:flex;flex-direction:column;gap:4px}
+.tpl-b b{font-weight:600;font-size:13px}
+.tpl-b small{color:var(--muted);font-size:11.5px}
+.tpl-f{display:flex;align-items:center;justify-content:space-between;padding:8px 6px 4px;border-top:1px solid var(--line-2)}
+.apps{display:flex;gap:6px;align-items:center}
+.app-i{width:16px;height:16px;border-radius:4px}
+.more{font-size:11px;color:var(--muted)}
+.uses{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:2px 6px}
+
+/* Placeholder views */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;min-height:320px;color:var(--muted)}
+.empty h2{color:var(--fg);margin:0;font-size:18px;font-weight:600}
+
+/* ---------- Entrance animation (from the video: blur + rise, staggered) ---------- */
+.reveal{animation:reveal .8s var(--ease) both;animation-delay:calc(var(--d,0) * 1ms)}
+@keyframes reveal{from{opacity:0;filter:blur(10px);transform:translateY(8px)}to{opacity:1;filter:blur(0);transform:none}}
+.topbar>*{animation:fade .6s var(--ease) both}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+/* ---------- AI assistant ---------- */
+.scrim{position:absolute;inset:56px 0 0 0;background:var(--scrim);backdrop-filter:blur(1px);opacity:0;pointer-events:none;transition:opacity .4s var(--ease);z-index:20}
+body.ai-open .scrim{opacity:1;pointer-events:auto}
+.assistant{position:absolute;top:66px;right:12px;bottom:12px;width:360px;max-width:calc(100% - 24px);background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;z-index:30;transform:translateX(calc(100% + 24px));transition:transform .55s var(--ease);overflow:hidden}
+body.ai-open .assistant{transform:none}
+.as-h{display:flex;align-items:center;justify-content:space-between;padding:12px 12px 12px 14px;border-bottom:1px solid var(--line-2)}
+.as-h .t{display:flex;align-items:center;gap:8px;font-weight:600}
+.as-h .t span{color:var(--muted);font-weight:400}
+.as-body{flex:1;overflow:auto;display:flex;flex-direction:column;padding:14px}
+.orb-wrap{flex:1;min-height:180px;display:grid;place-items:center;position:relative}
+.orb-grid{position:absolute;inset:10% 12%;background:
+  linear-gradient(var(--line-2) 1px,transparent 1px) 0 0/100% 33.33%,
+  linear-gradient(90deg,var(--line-2) 1px,transparent 1px) 0 0/33.33% 100%;
+  mask-image:radial-gradient(closest-side,#000 40%,transparent);-webkit-mask-image:radial-gradient(closest-side,#000 40%,transparent)}
+.orb{position:relative;width:64px;height:64px;border-radius:50%;background:var(--surface);box-shadow:0 10px 24px rgba(0,0,0,.14),inset 0 -2px 0 var(--line);display:grid;place-items:center;color:var(--info)}
+.orb svg{animation:spin 6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.as-hello h3{margin:0 0 6px;font-size:15px;font-weight:600}
+.as-hello p{margin:0 0 12px;color:var(--muted);line-height:1.5}
+.sugs{display:flex;flex-direction:column;gap:6px}
+.sug{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--line-2);border-radius:10px;text-align:left;background:var(--surface-2);transition:border-color .2s,background .2s}
+.sug:hover{border-color:var(--line);background:var(--surface)}
+.sug .chip-ic{background:var(--surface)}
+.msg{max-width:85%;padding:9px 12px;border-radius:12px;line-height:1.45;margin-top:8px}
+.msg.me{align-self:flex-end;background:var(--ink);color:var(--ink-fg);border-bottom-right-radius:4px}
+.msg.bot{align-self:flex-start;background:var(--surface-2);border:1px solid var(--line-2);border-bottom-left-radius:4px}
+.typing{display:inline-flex;gap:3px}
+.typing i{width:5px;height:5px;border-radius:50%;background:var(--faint);animation:blink 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes blink{50%{opacity:.25}}
+.as-input{margin:0 12px 12px;border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.as-input textarea{border:0;outline:0;resize:none;background:transparent;color:var(--fg);font:inherit;height:40px}
+.as-input .row{display:flex;justify-content:space-between;align-items:center}
+.send{width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--ink-fg);display:grid;place-items:center}
+/* stagger children each time the panel opens */
+body.ai-open .as-stagger>*{animation:reveal .7s var(--ease) both;animation-delay:calc(200ms + var(--d,0) * 1ms)}
+
+/* ---------- Responsive ---------- */
+@media (max-width:1100px){.stats,.tpls{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:820px){
+  .sidebar{position:fixed;inset:0 auto 0 0;z-index:40;transform:translateX(-100%);box-shadow:var(--shadow-lg);padding-top:calc(14px + env(safe-area-inset-top,0px));padding-left:calc(12px + env(safe-area-inset-left,0px))}
+  body.nav-open .sidebar{transform:none}
+  #collapse{display:none}
+  .menu-btn{display:grid}
+  .search{display:none}
+  .assistant{left:12px;width:auto}
+}
+@media (max-width:480px){.stats,.tpls{grid-template-columns:minmax(0,1fr)}.ask .lbl{display:none}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-grid" viewBox="0 0 16 16" fill="currentColor"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></symbol>
+  <symbol id="i-flow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="4" cy="4" r="1.6"/><circle cx="4" cy="12" r="1.6"/><circle cx="12" cy="8" r="1.6"/><path d="M4 5.6v4.8M5.6 4h2a2 2 0 0 1 2 2v.4M10.4 8H8"/></symbol>
+  <symbol id="i-canvas" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2.5" y="2.5" width="11" height="11" rx="2.5"/><path d="M6 8h4"/></symbol>
+  <symbol id="i-tpl" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5v11M2.5 8h11"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2.5 13.5h11M4.5 11V8M8 11V4.5M11.5 11V7"/></symbol>
+  <symbol id="i-team" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="5.5" r="2.5"/><path d="M3 13.5a5 5 0 0 1 10 0"/></symbol>
+  <symbol id="i-plug" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 13.5c-2.5-2-4-3.8-4-6a4 4 0 0 1 8 0c0 2.2-1.5 4-4 6Z"/><circle cx="8" cy="7.5" r="1.3"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="2"/><path d="M8 1.8v1.7M8 12.5v1.7M1.8 8h1.7M12.5 8h1.7M3.6 3.6l1.2 1.2M11.2 11.2l1.2 1.2M3.6 12.4l1.2-1.2M11.2 4.8l1.2-1.2"/></symbol>
+  <symbol id="i-help" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="5.5"/><path d="M6.5 6.5a1.5 1.5 0 1 1 2.2 1.3c-.5.3-.7.6-.7 1.2M8 11v.1"/></symbol>
+  <symbol id="i-monitor" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="3" width="12" height="8" rx="1.5"/><path d="M6 13.5h4M8 11v2.5"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="2.5"/><path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1 1M11.6 11.6l1 1M3.4 12.6l1-1M11.6 4.4l1-1"/></symbol>
+  <symbol id="i-dot" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="4.5" stroke-dasharray="2 2"/></symbol>
+  <symbol id="i-panel" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2.5" y="2.5" width="11" height="11" rx="2"/><path d="M6.5 2.5v11"/></symbol>
+  <symbol id="i-search" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5c.5 3.2 1.3 4 4.5 4.5-3.2.5-4 1.3-4.5 4.5C7.5 7.3 6.7 6.5 3.5 6c3.2-.5 4-1.3 4.5-4.5Z"/><path d="M12.5 9.5c.3 1.6.6 2 2 2.2-1.4.3-1.7.6-2 2.3-.3-1.7-.6-2-2.2-2.3 1.6-.2 1.9-.6 2.2-2.2Z"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 11V7a4 4 0 0 1 8 0v4l1 1.5H3L4 11ZM6.5 14h3"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2.5" y="3.5" width="11" height="10" rx="1.5"/><path d="M2.5 6.5h11M5.5 2v3M10.5 2v3"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 3v10M3 8h10"/></symbol>
+  <symbol id="i-pulse" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1.5 8h3l1.5-4 3 8 1.5-4h4"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.3"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.6 9h5.8l.6-9"/></symbol>
+  <symbol id="i-star" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="m8 2.5 1.7 3.5 3.8.5-2.8 2.6.7 3.8L8 11.1 4.6 12.9l.7-3.8L2.5 6.5l3.8-.5L8 2.5Z"/></symbol>
+  <symbol id="i-x" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4 4 8 8M12 4l-8 8"/></symbol>
+  <symbol id="i-left" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m10 3.5-4.5 4.5 4.5 4.5"/></symbol>
+  <symbol id="i-right" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 3.5 4.5 4.5L6 12.5"/></symbol>
+  <symbol id="i-up" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 13V3.5M4 7.5l4-4 4 4"/></symbol>
+  <symbol id="i-down" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4 6 4 4 4-4"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 4.5h11M2.5 8h11M2.5 11.5h11"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3.5" width="12" height="9" rx="1.5"/><path d="m2.5 4.5 5.5 4 5.5-4"/></symbol>
+  <symbol id="i-bars" viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="8" width="2.5" height="5" rx=".6"/><rect x="6.75" y="4" width="2.5" height="9" rx=".6"/><rect x="10.5" y="6" width="2.5" height="7" rx=".6"/></symbol>
+  <symbol id="i-box" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 2 13.5 5v6L8 14 2.5 11V5L8 2Zm0 6 5.5-3M8 8 2.5 5M8 8v6"/></symbol>
+  <symbol id="i-cog2" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="5.5" cy="10.5" r="2.5"/><circle cx="11" cy="5" r="2"/><path d="m7.3 8.7 2.2-2.2"/></symbol>
+</svg>
+
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar" aria-label="Navegação principal">
+    <div class="brand">
+      <div class="brand-l"><span class="logo"><svg width="12" height="12"><use href="#i-flow"/></svg></span><span class="hide-c">SoftwareMinas</span></div>
+      <button class="icon-btn" id="collapse" aria-label="Reduzir menu" aria-expanded="true" data-tip="Expandir menu"><svg width="16" height="16"><use href="#i-panel"/></svg></button>
+    </div>
+
+    <div class="group-label"><svg class="hide-c" width="12" height="12"><use href="#i-dot"/></svg><span class="hide-c">Espaço de trabalho</span></div>
+    <nav class="nav" id="nav">
+      <button class="nav-item active" data-view="dashboard"><svg width="16" height="16"><use href="#i-grid"/></svg><span class="grow hide-c">Painel</span></button>
+      <button class="nav-item" data-view="library" data-badge><svg width="16" height="16"><use href="#i-flow"/></svg><span class="grow hide-c">Biblioteca de fluxos</span><span class="badge blue hide-c">28</span></button>
+      <button class="nav-item" data-view="canvas"><svg width="16" height="16"><use href="#i-canvas"/></svg><span class="grow hide-c">Editor de fluxos</span><span class="flame hide-c">🔥</span></button>
+      <button class="nav-item" data-view="templates"><svg width="16" height="16"><use href="#i-tpl"/></svg><span class="grow hide-c">Modelos</span></button>
+      <button class="nav-item" data-view="analytics"><svg width="16" height="16"><use href="#i-chart"/></svg><span class="grow hide-c">Análises</span></button>
+      <button class="nav-item" data-view="team" data-badge><svg width="16" height="16"><use href="#i-team"/></svg><span class="grow hide-c">Equipe</span><span class="badge green hide-c">38+</span></button>
+      <button class="nav-item" data-view="integrations"><svg width="16" height="16"><use href="#i-plug"/></svg><span class="grow hide-c">Integrações</span></button>
+    </nav>
+
+    <div class="group-label"><svg class="hide-c" width="12" height="12"><use href="#i-dot"/></svg><span class="hide-c">Gestão de agentes</span></div>
+    <nav class="nav">
+      <button class="nav-item" data-view="settings"><svg width="16" height="16"><use href="#i-gear"/></svg><span class="grow hide-c">Configurações</span></button>
+      <button class="nav-item" data-view="help"><svg width="16" height="16"><use href="#i-help"/></svg><span class="grow hide-c">Ajuda e suporte</span></button>
+      <button class="nav-item" id="themeBtn"><svg width="16" height="16"><use href="#i-monitor"/></svg><span class="grow hide-c">Aparência</span><svg class="hide-c" width="14" height="14"><use href="#i-sun"/></svg></button>
+    </nav>
+
+    <div class="spacer"></div>
+
+    <div class="group-label" style="justify-content:space-between"><svg class="hide-c" width="12" height="12"><use href="#i-dot"/></svg><span class="hide-c" style="flex:1">Execuções recentes</span><button class="icon-btn hide-c" style="width:20px;height:20px" aria-label="Nova execução"><svg width="12" height="12"><use href="#i-plus"/></svg></button></div>
+    <div class="runs">
+      <a class="run" href="#"><span class="dot" style="background:#f87171"></span><span class="t hide-c">Roteador de suporte por e-mail</span><svg class="star hide-c" width="13" height="13"><use href="#i-star"/></svg></a>
+      <a class="run" href="#"><span class="dot" style="background:#fbbf24"></span><span class="t hide-c">Pontuação de leads via Webhook</span><svg class="star hide-c" width="13" height="13"><use href="#i-star"/></svg></a>
+      <a class="run" href="#"><span class="dot" style="background:#38bdf8"></span><span class="t hide-c">Gerador de relatório semanal</span><svg class="star hide-c" width="13" height="13"><use href="#i-star"/></svg></a>
+      <a class="run" href="#"><span class="dot" style="background:#fb923c"></span><span class="t hide-c">Sincronização com HubSpot</span><svg class="star hide-c" width="13" height="13"><use href="#i-star"/></svg></a>
+    </div>
+
+    <div class="quota hide-c">
+      <b class="num">891/1.000</b>
+      <div class="meter"><i></i></div>
+      <small>Faça upgrade para uso ilimitado</small>
+      <button class="upgrade">Fazer upgrade</button>
+    </div>
+    <div class="user" data-tip="Jane Doe">
+      <span class="avatar">A</span>
+      <div class="who hide-c">Anderson<small>seu@email.com</small></div>
+      <svg class="hide-c" width="14" height="14" style="color:var(--muted)"><use href="#i-down"/></svg>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menuBtn" aria-label="Abrir menu"><svg width="16" height="16"><use href="#i-menu"/></svg></button>
+      <div class="crumb"><svg width="15" height="15"><use href="#i-grid"/></svg><span id="crumb">Painel</span></div>
+      <label class="search"><svg width="14" height="14"><use href="#i-search"/></svg><input id="search" placeholder="Buscar algo…" aria-label="Buscar"></label>
+      <button class="ask" id="askBtn" aria-expanded="false" aria-controls="assistant"><svg width="14" height="14"><use href="#i-spark"/></svg><span class="lbl">Pergunte à IA</span></button>
+      <button class="icon-btn" aria-label="Notificações"><svg width="16" height="16"><use href="#i-bell"/></svg></button>
+    </header>
+
+    <div class="scroll"><div class="content" id="view"></div></div>
+
+    <div class="scrim" id="scrim"></div>
+
+    <!-- AI assistant -->
+    <section class="assistant" id="assistant" aria-label="Assistente IA" aria-hidden="true">
+      <div class="as-h">
+        <div class="t"><span class="logo"><svg width="12" height="12"><use href="#i-flow"/></svg></span>Softwareminas <span>Assistente</span></div>
+        <button class="icon-btn" id="closeAi" aria-label="Fechar assistente"><svg width="14" height="14"><use href="#i-x"/></svg></button>
+      </div>
+      <div class="as-body" id="asBody">
+        <div class="orb-wrap"><div class="orb-grid"></div><div class="orb"><svg width="24" height="24"><use href="#i-spark"/></svg></div></div>
+        <div class="as-hello as-stagger" id="hello">
+          <h3 style="--d:0">Olá!</h3>
+          <p style="--d:90">Pergunte qualquer coisa sobre seus fluxos, ideias de automação, falhas nas execuções ou como otimizar seus agentes de IA.</p>
+          <div class="sugs" style="--d:180">
+            <button class="sug" data-q="Me ajude a criar um novo fluxo"><span class="chip-ic" style="color:#ef4444"><svg width="12" height="12"><use href="#i-flow"/></svg></span>Criar um fluxo</button>
+            <button class="sug" data-q="Quais integrações devo explorar?"><span class="chip-ic" style="color:#3b82f6"><svg width="12" height="12"><use href="#i-plug"/></svg></span>Explorar integrações</button>
+            <button class="sug" data-q="Como posso melhorar o desempenho?"><span class="chip-ic" style="color:#f97316"><svg width="12" height="12"><use href="#i-pulse"/></svg></span>Otimizar desempenho</button>
+          </div>
+        </div>
+      </div>
+      <form class="as-input" id="askForm">
+        <textarea id="askInput" placeholder="Pergunte algo sobre seus fluxos…" aria-label="Mensagem"></textarea>
+        <div class="row">
+          <button type="button" class="icon-btn" style="width:22px;height:22px" aria-label="Anexar"><svg width="13" height="13"><use href="#i-plus"/></svg></button>
+          <button type="submit" class="send" aria-label="Enviar"><svg width="13" height="13"><use href="#i-up"/></svg></button>
+        </div>
+      </form>
+    </section>
+  </main>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const body = document.body;
+
+  /* ---------- Data ---------- */
+  const stats = [
+    {label:'Total de execuções', val:12847, fmt:v=>Math.round(v).toLocaleString('pt-BR'), delta:'+12% vs. semana passada', up:true, icon:'i-pulse'},
+    {label:'Taxa de sucesso', val:98.2, fmt:v=>v.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%', delta:'+0,4% vs. semana passada', up:true, icon:'i-chart'},
+    {label:'Fluxos ativos', val:23, fmt:v=>Math.round(v)+'+', delta:'+3 vs. semana passada', up:true, icon:'i-flow'},
+    {label:'Tokens de IA', val:842, fmt:v=>Math.round(v)+' mil', delta:'-2% vs. semana passada', up:false, icon:'i-spark'},
+  ];
+  const flows = [
+    ['Roteador de suporte por e-mail','Webhook','12.847','98,2%','há 2 min','#f87171','good'],
+    ['Pipeline de pontuação de leads','Agendado','12.569','96,4%','há 15 min','#fbbf24','good'],
+    ['Resumo diário do Slack','Agendado','11.646','91,6%','há 30 min','#38bdf8','good'],
+    ['Gerador de relatório semanal','Webhook','10.848','73,5%','há 2 h','#fb923c','warn'],
+    ['Monitor de marca no Twitter','Agendado','10.563','88,3%','há 3 h','#4ade80','good'],
+    ['Roteador de suporte semanal','Agendado','4.648','68,7%','há 1 semana','#fb923c','warn'],
+  ];
+  const tpls = [
+    ['Roteador de suporte por e-mail','Usado há 2 horas','Webhook','Ativo','i-mail',['#0ea5e9','#ef4444','#a855f7','#22c55e'],'4+','1.204 execuções'],
+    ['Pipeline de pontuação de leads','Usado há 4 horas','Manual','Ativo','i-bars',['#22c55e','#0ea5e9','#71717a','#6366f1'],'5+','1.201 execuções'],
+    ['Relatório do painel de vendas','Usado ontem','Webhook','Ativo','i-box',['#16a34a','#ef4444','#f97316','#dc2626'],'7+','1.204 execuções'],
+    ['Gerador de relatório semanal','Usado há 2 dias','Agendado','Pausado','i-cog2',['#ef4444','#0ea5e9','#a855f7','#22c55e'],'4+','1.204 execuções'],
+  ];
+
+  /* ---------- Views ---------- */
+  const dashboard = () => `
+    <div class="head">
+      <div class="reveal" style="--d:100"><h1>Bem-vinda de volta, Jane!</h1><p>Automatize tarefas com IA em minutos. Sem precisar programar.</p></div>
+      <div class="head-actions reveal" style="--d:220">
+        <button class="btn ghost"><svg width="14" height="14"><use href="#i-cal"/></svg>27 de abril de 2026</button>
+        <button class="btn dark"><svg width="13" height="13"><use href="#i-plus"/></svg>Criar fluxo</button>
+      </div>
+    </div>
+    <div class="stats">
+      ${stats.map((s,i)=>`
+        <div class="stat reveal" style="--d:${320+i*90}">
+          <div class="stat-in">
+            <div class="stat-top"><span class="chip-ic"><svg width="12" height="12"><use href="#${s.icon}"/></svg></span>${s.label}</div>
+            <div class="stat-val num" data-count="${i}">${s.fmt(0)}</div>
+          </div>
+          <div class="stat-foot"><span class="${s.up?'up':'down'}">${s.delta}</span><svg class="i" width="13" height="13"><use href="#i-help"/></svg></div>
+        </div>`).join('')}
+    </div>
+    <section class="panel reveal" style="--d:700">
+      <div class="panel-h"><h2>Fluxos ativos</h2><a class="link" href="#">Ver todos</a></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Nome do fluxo</th><th>Gatilho</th><th>Execuções</th><th>Sucesso</th><th>Última execução</th><th>Status</th><th>Ações</th></tr></thead>
+        <tbody>${flows.map((f,i)=>`
+          <tr class="reveal" style="--d:${820+i*80}">
+            <td><span class="wf"><span class="dot" style="background:${f[5]}"></span>${f[0]}</span></td>
+            <td class="muted">${f[1]}</td>
+            <td class="num">${f[2]}</td>
+            <td class="num" style="color:var(--${f[6]})">${f[3]}</td>
+            <td><span class="last"><svg width="13" height="13"><use href="#i-clock"/></svg>${f[4]}</span></td>
+            <td><span class="pill">Ativo</span></td>
+            <td><span class="acts"><button>Ver</button><button>Editar</button><button aria-label="Excluir"><svg width="13" height="13"><use href="#i-trash"/></svg></button></span></td>
+          </tr>`).join('')}</tbody>
+      </table></div>
+    </section>
+    <section class="panel reveal" style="--d:1250">
+      <div class="panel-h"><h2>Modelos usados recentemente</h2><div class="tpl-nav"><button aria-label="Anterior"><svg width="12" height="12"><use href="#i-left"/></svg></button><button aria-label="Próximo"><svg width="12" height="12"><use href="#i-right"/></svg></button></div></div>
+      <div class="tpls">${tpls.map((t,i)=>`
+        <article class="tpl reveal" style="--d:${1350+i*100}">
+          <div class="tpl-art"><span class="tag ${t[3]==='Pausado'?'p':''}">${t[3]}</span><div class="obj"><svg width="24" height="24"><use href="#${t[4]}"/></svg></div></div>
+          <div class="tpl-b"><b>${t[0]}</b><small>${t[1]} · ${t[2]}</small></div>
+          <div class="tpl-f"><span class="apps">${t[5].map(c=>`<span class="app-i" style="background:${c}"></span>`).join('')}<span class="more">${t[6]}</span></span><span class="uses num">${t[7]}</span></div>
+        </article>`).join('')}</div>
+    </section>`;
+
+  const placeholder = name => `
+    <div class="head"><div class="reveal" style="--d:80"><h1>${name}</h1><p>Esta seção é um espaço reservado no modelo. Duplique a visão do Painel para montá-la.</p></div></div>
+    <section class="panel reveal" style="--d:220"><div class="empty"><svg width="28" height="28"><use href="#i-grid"/></svg><h2>${name}</h2><span>O conteúdo desta página entra aqui.</span><button class="btn dark" data-go="dashboard">Voltar ao Painel</button></div></section>`;
+
+  function countUp(){
+    document.querySelectorAll('[data-count]').forEach(el=>{
+      const s = stats[+el.dataset.count];
+      const delay = 400 + (+el.dataset.count)*90, dur = 1400;
+      const t0 = performance.now() + delay;
+      const tick = now => {
+        const p = Math.min(1, Math.max(0,(now - t0)/dur));
+        const e = 1 - Math.pow(1-p, 4);
+        el.textContent = s.fmt(s.val * e);
+        if (p < 1) requestAnimationFrame(tick);
+      };
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) el.textContent = s.fmt(s.val);
+      else requestAnimationFrame(tick);
+    });
+  }
+
+  document.documentElement.lang = 'pt-BR';
+  const names = {dashboard:'Painel',library:'Biblioteca de fluxos',canvas:'Editor de fluxos',templates:'Modelos',analytics:'Análises',team:'Equipe',integrations:'Integrações',settings:'Configurações',help:'Ajuda e suporte'};
+  function go(view){
+    const v = $('#view');
+    v.innerHTML = view === 'dashboard' ? dashboard() : placeholder(names[view]);
+    $('#crumb').textContent = names[view];
+    document.querySelectorAll('.nav-item[data-view]').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
+    if (view === 'dashboard') countUp();
+    v.parentElement.scrollTop = 0;
+    body.classList.remove('nav-open');
+  }
+  document.addEventListener('click', e=>{
+    const n = e.target.closest('[data-view]'); if (n) go(n.dataset.view);
+    const g = e.target.closest('[data-go]'); if (g) go(g.dataset.go);
+    if (e.target.closest('a[href="#"]')) e.preventDefault();
+  });
+
+  /* ---------- Sidebar ---------- */
+  // Botão do topo: alterna entre menu completo e menu reduzido (só ícones)
+  const collapseBtn = $('#collapse');
+  function setCollapsed(on){
+    body.classList.toggle('collapsed', on);
+    collapseBtn.setAttribute('aria-expanded', !on);
+    collapseBtn.setAttribute('aria-label', on ? 'Expandir menu' : 'Reduzir menu');
+    try { localStorage.setItem('softwareminasai-menu-reduzido', on ? '1' : '0'); } catch(e){}
+    hideTip();
+  }
+  collapseBtn.onclick = () => setCollapsed(!body.classList.contains('collapsed'));
+
+  // Dicas (tooltips) com o nome de cada item quando o menu está reduzido
+  const tip = document.createElement('div'); tip.className = 'tip'; tip.setAttribute('role','tooltip'); document.body.appendChild(tip);
+  function hideTip(){ tip.classList.remove('show'); }
+  function showTip(el){
+    if (!body.classList.contains('collapsed') || innerWidth <= 820) return;
+    const label = el.dataset.tip || el.querySelector('.hide-c')?.textContent.trim();
+    if (!label) return;
+    tip.textContent = el === collapseBtn ? 'Expandir menu' : label;
+    const r = el.getBoundingClientRect();
+    tip.style.left = (r.right + 10) + 'px';
+    tip.style.top = (r.top + r.height/2 - 13) + 'px';
+    tip.classList.add('show');
+  }
+  const tipTargets = '.nav-item, .run, #collapse, .user';
+  $('#sidebar').addEventListener('mouseover', e=>{ const t = e.target.closest(tipTargets); t ? showTip(t) : hideTip(); });
+  $('#sidebar').addEventListener('focusin', e=>{ const t = e.target.closest(tipTargets); if (t) showTip(t); });
+  $('#sidebar').addEventListener('mouseleave', hideTip);
+  $('#sidebar').addEventListener('focusout', hideTip);
+  try { if (localStorage.getItem('softwareminasai-menu-reduzido') === '1') setCollapsed(true); } catch(e){}
+  $('#menuBtn').onclick = () => body.classList.toggle('nav-open');
+  $('#themeBtn').onclick = () => {
+    const r = document.documentElement;
+    const dark = r.dataset.theme ? r.dataset.theme==='dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    r.dataset.theme = dark ? 'light' : 'dark';
+  };
+
+  /* ---------- Assistant ---------- */
+  const askBtn = $('#askBtn'), asst = $('#assistant');
+  function setAi(open){
+    body.classList.toggle('ai-open', open);
+    askBtn.classList.toggle('on', open);
+    askBtn.setAttribute('aria-expanded', open);
+    asst.setAttribute('aria-hidden', !open);
+    if (open){
+      // restart stagger animation each open
+      const h = $('#hello'); h.classList.remove('as-stagger'); void h.offsetWidth; h.classList.add('as-stagger');
+      setTimeout(()=>$('#askInput').focus({preventScroll:true}), 450);
+    }
+  }
+  askBtn.onclick = () => setAi(!body.classList.contains('ai-open'));
+  $('#closeAi').onclick = () => setAi(false);
+  $('#scrim').onclick = () => setAi(false);
+  document.addEventListener('keydown', e=>{ if (e.key==='Escape'){ setAi(false); body.classList.remove('nav-open'); }});
+
+  const replies = {
+    'Me ajude a criar um novo fluxo':'Claro. Comece escolhendo um gatilho (Webhook, Agendado ou Manual) e depois adicione as etapas. Quer que eu comece pelo modelo “Roteador de suporte por e-mail”?',
+    'Quais integrações devo explorar?':'Pelas suas execuções, Slack, HubSpot e Gmail cobrem a maior parte dos seus fluxos. Notion e Linear combinariam bem com os relatórios semanais.',
+    'Como posso melhorar o desempenho?':'O “Roteador de suporte semanal” está com 68,7% de sucesso. A maioria das falhas é tempo esgotado na etapa de enriquecimento; adicionar novas tentativas com intervalo crescente deve ajudar.',
+  };
+  function send(q){
+    if (!q.trim()) return;
+    const b = $('#asBody');
+    const hello = $('#hello'); const orb = b.querySelector('.orb-wrap');
+    if (orb) { orb.style.flex='0 0 auto'; orb.style.minHeight='96px'; }
+    hello.querySelector('.sugs')?.remove(); hello.querySelector('p')?.remove();
+    const me = document.createElement('div'); me.className='msg me reveal'; me.textContent=q; b.appendChild(me);
+    const bot = document.createElement('div'); bot.className='msg bot reveal'; bot.innerHTML='<span class="typing"><i></i><i></i><i></i></span>'; b.appendChild(bot);
+    b.scrollTop = b.scrollHeight;
+    setTimeout(()=>{ bot.textContent = replies[q] || 'Entendi. Analisei seus 23 fluxos ativos: a taxa de sucesso geral é de 98,2%, e dois fluxos agendados estão abaixo de 75%.'; b.scrollTop=b.scrollHeight; }, 900);
+  }
+  document.querySelectorAll('.sug').forEach(s=>s.onclick=()=>send(s.dataset.q));
+  $('#askForm').addEventListener('submit', e=>{ e.preventDefault(); const i=$('#askInput'); send(i.value); i.value=''; });
+  $('#askInput').addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); $('#askForm').requestSubmit(); }});
+
+  go('dashboard');
+})();
+</script>
