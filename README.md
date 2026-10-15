@@ -1,4 +1,4 @@
-# ☰ [Modelo página 01](https://andsilva81.github.io/ui/modelopagina01/sidebar01.html) ![Status](https://img.shields.io/badge/status-ativo-brightgreen) ![HTML](https://img.shields.io/badge/feito%20com-HTML%20%2B%20CSS-orange)
+# ☰ [Modelo página 01](https://andsilva81.github.io/ui/modelopagina01/modelopagina01.html) ![Status](https://img.shields.io/badge/status-ativo-brightgreen) ![HTML](https://img.shields.io/badge/feito%20com-HTML%20%2B%20CSS-orange)
 
 - **HTML + CSS **, tudo em um único arquivo.
 - Sem frameworks, sem instalação, sem passo de build.
